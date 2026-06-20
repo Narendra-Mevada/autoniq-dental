@@ -26,6 +26,7 @@ const DataTable = ({ columns, data, actions }) => {
                         key={idx} 
                         className={`btn ${action.type === 'primary' ? 'btn-primary' : 'btn-secondary'}`}
                         style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        onClick={() => action.onClick && action.onClick(row)}
                       >
                         {action.label}
                       </button>

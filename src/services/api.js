@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://51.21.93.215:3000/api';
 
 export const fetchPatients = async () => {
   const res = await fetch(`${API_URL}/db/patients`);
