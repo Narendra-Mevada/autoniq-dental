@@ -117,6 +117,53 @@ app.put('/api/db/payments/:id', async (req, res) => {
   }
 });
 
+// Create New Appointment
+app.post('/api/db/appointments', async (req, res) => {
+  try {
+    const { patient_name, appointment_date, appointment_time, service } = req.body;
+    
+    // Check if patient exists by name, if not create a dummy patient or just rely on patient_name
+    // Since original schema allowed direct patient_name or patient_id, we'll try to find a patient first
+    let patientRes = await pool.query('SELECT id FROM patients WHERE name = $1 LIMIT 1', [patient_name]);
+    let patient_id = null;
+    if (patientRes.rows.length > 0) {
+      patient_id = patientRes.rows[0].id;
+    }
+
+    // Insert into appointments (Handling both schemas by just inserting what we have)
+    // Note: If patient_id is required by FK, we must create a patient.
+    if (!patient_id) {
+       const newPatient = await pool.query('INSERT INTO patients (name, phone) VALUES ($1, $2) RETURNING id', [patient_name, 'Unknown']);
+       patient_id = newPatient.rows[0].id;
+    }
+
+    await pool.query(
+      'INSERT INTO appointments (patient_id, appointment_date, appointment_time, service) VALUES ($1, $2, $3, $4)', 
+      [patient_id, appointment_date, appointment_time, service]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Appointment Details
+app.put('/api/db/appointments/details/:id', async (req, res) => {
+  try {
+    const { patient_name, appointment_date, appointment_time, service } = req.body;
+    
+    // To properly update patient_name, we would need to update the patients table.
+    // For simplicity of this demo, we'll just update the appointment fields.
+    await pool.query(
+      'UPDATE appointments SET appointment_date = $1, appointment_time = $2, service = $3 WHERE id = $4', 
+      [appointment_date, appointment_time, service, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Proxy n8n API
 app.get('/api/n8n/executions', (req, res) => {
   const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=50';

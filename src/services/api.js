@@ -59,3 +59,23 @@ export const updatePaymentStatus = async (id, status) => {
   if (!res.ok) throw new Error('Failed to update payment');
   return res.json();
 };
+
+export const createAppointment = async (data) => {
+  const res = await fetch(`${API_URL}/db/appointments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to create appointment');
+  return res.json();
+};
+
+export const updateAppointmentDetails = async (id, data) => {
+  const res = await fetch(`${API_URL}/db/appointments/details/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update appointment details');
+  return res.json();
+};

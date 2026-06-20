@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import { fetchAppointments, updateAppointmentStatus } from '../services/api';
+import Modal from '../components/Modal';
+import { fetchAppointments, updateAppointmentStatus, createAppointment, updateAppointmentDetails } from '../services/api';
 
 const Appointments = () => {
   const [appointmentsData, setAppointmentsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('new'); // 'new', 'edit', 'view'
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const loadAppointments = async () => {
     try {
@@ -26,15 +32,25 @@ const Appointments = () => {
   const handleMarkArrived = async (id) => {
     try {
       await updateAppointmentStatus(id, 'Arrived');
-      loadAppointments(); // reload data to show updated status
+      loadAppointments(); 
     } catch (err) {
       alert(err.message);
     }
   };
 
+  const openModal = (type, appointment = null) => {
+    setModalType(type);
+    setSelectedAppointment(appointment);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
+  };
+
   const columns = ['Name', 'Date', 'Time', 'Service', 'Status'];
   
-  // Filter Data based on Tab
   const filteredData = appointmentsData.filter(app => {
     const appDate = new Date(app.appointment_date).toDateString();
     const todayDate = new Date().toDateString();
@@ -49,11 +65,12 @@ const Appointments = () => {
       const diff = new Date(app.appointment_date) - new Date();
       return diff >= 0 && diff <= 7 * 24 * 60 * 60 * 1000;
     }
-    return true; // 'All'
+    return true;
   });
 
   const data = filteredData.map(app => ({
-    _id: app.id, // hidden field for actions
+    _raw: app, // Pass full object for editing
+    _id: app.id,
     name: app.patient_name || app.name || 'Walk-in',
     date: new Date(app.appointment_date).toLocaleDateString(),
     time: app.appointment_time,
@@ -62,10 +79,20 @@ const Appointments = () => {
   }));
 
   const actions = [
-    { label: 'View', type: 'secondary', onClick: (row) => alert(`Opening View Modal for ${row.name}`) },
-    { label: 'Edit', type: 'secondary', onClick: (row) => alert(`Opening Edit Modal for ${row.name}`) },
+    { label: 'View', type: 'secondary', onClick: (row) => openModal('view', row._raw) },
+    { label: 'Edit', type: 'secondary', onClick: (row) => openModal('edit', row._raw) },
     { label: 'Mark Arrived', type: 'primary', onClick: (row) => handleMarkArrived(row._id) }
   ];
+
+  // Common input style
+  const inputStyle = {
+    padding: '0.75rem',
+    borderRadius: '8px',
+    border: '1px solid var(--border)',
+    background: 'rgba(255,255,255,0.05)',
+    color: 'var(--text-primary)',
+    width: '100%'
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -81,7 +108,7 @@ const Appointments = () => {
             </button>
           ))}
         </div>
-        <button className="btn btn-primary" onClick={() => alert('Opening New Appointment Modal...')}>New Appointment</button>
+        <button className="btn btn-primary" onClick={() => openModal('new')}>New Appointment</button>
       </div>
       
       {loading ? (
@@ -91,6 +118,79 @@ const Appointments = () => {
       ) : (
         <DataTable columns={columns} data={data} actions={actions} />
       )}
+
+      {/* Dynamic Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        title={modalType === 'new' ? 'New Appointment' : modalType === 'edit' ? 'Edit Appointment' : 'Appointment Details'}
+      >
+        {modalType === 'view' && selectedAppointment ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)' }}>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Patient Name:</strong> {selectedAppointment.patient_name || 'Walk-in'}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Phone:</strong> {selectedAppointment.phone || 'N/A'}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Service:</strong> {selectedAppointment.service}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Date:</strong> {new Date(selectedAppointment.appointment_date).toLocaleDateString()}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Time:</strong> {selectedAppointment.appointment_time}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Status:</strong> {selectedAppointment.appointment_status}</p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+               <button className="btn btn-primary" onClick={closeModal}>Close</button>
+            </div>
+          </div>
+        ) : (
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const appointmentData = {
+              patient_name: formData.get('patient_name'),
+              appointment_date: formData.get('date'),
+              appointment_time: formData.get('time'),
+              service: formData.get('service')
+            };
+
+            try {
+              if (modalType === 'new') {
+                await createAppointment(appointmentData);
+              } else {
+                await updateAppointmentDetails(selectedAppointment.id, appointmentData);
+              }
+              loadAppointments();
+              closeModal();
+            } catch (err) {
+              alert('Error saving appointment: ' + err.message);
+            }
+          }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Patient Name</label>
+              <input name="patient_name" type="text" style={inputStyle} defaultValue={selectedAppointment?.patient_name || ''} required />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Date</label>
+                <input name="date" type="date" style={inputStyle} defaultValue={selectedAppointment ? new Date(selectedAppointment.appointment_date).toISOString().split('T')[0] : ''} required />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Time</label>
+                <input name="time" type="time" style={inputStyle} defaultValue={selectedAppointment?.appointment_time || ''} required />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Service</label>
+              <select name="service" style={inputStyle} defaultValue={selectedAppointment?.service || 'Consultation'}>
+                <option value="Consultation">Consultation</option>
+                <option value="Root Canal Treatment (RCT)">Root Canal Treatment (RCT)</option>
+                <option value="Teeth Whitening">Teeth Whitening</option>
+                <option value="Braces / Orthodontics">Braces / Orthodontics</option>
+                <option value="Dental Implants">Dental Implants</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+              <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+              <button type="submit" className="btn btn-primary">Save Appointment</button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 };
