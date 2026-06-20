@@ -1,43 +1,45 @@
 name: Deploy to VPS
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches:
+- main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+deploy:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+steps:
+  - name: Checkout Code
+    uses: actions/checkout@v3
 
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 2112
-          script: |
-            # Load environment variables and NVM
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            export PATH=$PATH:/usr/local/bin:/usr/bin
-            
-            # Navigate to the project directory
-            cd /var/www/autoniq-dental
-            
-            # Pull latest code from main
-            git pull origin main
-            
-            # Install backend and frontend dependencies
-            npm install
-            
-            # Build the Vite frontend
-            npm run build
-            
-            # Restart the Node server via PM2
-            # (Assumes the PM2 process is named 'autoniq-dashboard')
-            pm2 restart autoniq-dashboard || pm2 start server.js --name "autoniq-dashboard"
+  - name: Deploy to VPS
+    uses: appleboy/ssh-action@v0.1.10
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_PRIVATE_KEY }}
+      port: 2112
+      script: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+        rm -rf /var/www/autoniq-dental
+
+        git clone https://github.com/Narendra-Mevada/autoniq-dental.git /var/www/autoniq-dental
+
+        cd /var/www/autoniq-dental
+
+        cat > .env << EOF
+        DATABASE_URL=${{ secrets.DATABASE_URL }}
+        N8N_API_KEY=${{ secrets.N8N_API_KEY }}
+        PORT=${{ secrets.PORT }}
+        EOF
+
+        npm install
+        npm run build
+
+        pm2 restart autoniq-dashboard --update-env || pm2 start server.js --name autoniq-dashboard
+
+        pm2 save
+
