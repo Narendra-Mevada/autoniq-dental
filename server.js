@@ -152,12 +152,17 @@ app.put('/api/db/appointments/details/:id', async (req, res) => {
   try {
     const { patient_name, appointment_date, appointment_time, service } = req.body;
     
-    // To properly update patient_name, we would need to update the patients table.
-    // For simplicity of this demo, we'll just update the appointment fields.
     await pool.query(
       'UPDATE appointments SET appointment_date = $1, appointment_time = $2, service = $3 WHERE id = $4', 
       [appointment_date, appointment_time, service, req.params.id]
     );
+
+    // Update patient name if we have a patient_name
+    const appt = await pool.query('SELECT patient_id FROM appointments WHERE id = $1', [req.params.id]);
+    if (appt.rows.length > 0 && appt.rows[0].patient_id && patient_name) {
+       await pool.query('UPDATE patients SET name = $1 WHERE id = $2', [patient_name, appt.rows[0].patient_id]);
+    }
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
