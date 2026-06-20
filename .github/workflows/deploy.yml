@@ -21,8 +21,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2112
           script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:/home/ubuntu/.local/bin:/home/ubuntu/.hermes/node/bin
+
+            node -v
+            npm -v
+            pm2 -v
 
             rm -rf /var/www/autoniq-dental
 
