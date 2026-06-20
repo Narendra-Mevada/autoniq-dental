@@ -49,10 +49,10 @@ app.get('/api/db/patients', async (req, res) => {
 app.get('/api/db/appointments', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT a.*, p.name as patient_name, p.phone
+      SELECT a.*, COALESCE(p.name, a.patient_name) as patient_name, COALESCE(p.phone, a.phone) as phone
       FROM appointments a
       LEFT JOIN patients p ON a.patient_id = p.id
-      ORDER BY a.appointment_date ASC, a.appointment_time ASC
+      ORDER BY a.appointment_date DESC
     `);
     res.json(result.rows);
   } catch (err) {
@@ -153,11 +153,11 @@ app.put('/api/db/appointments/details/:id', async (req, res) => {
     const { patient_name, appointment_date, appointment_time, service } = req.body;
     
     await pool.query(
-      'UPDATE appointments SET appointment_date = $1, appointment_time = $2, service = $3 WHERE id = $4', 
-      [appointment_date, appointment_time, service, req.params.id]
+      'UPDATE appointments SET appointment_date = $1, appointment_time = $2, service = $3, patient_name = $4 WHERE id = $5', 
+      [appointment_date, appointment_time, service, patient_name, req.params.id]
     );
 
-    // Update patient name if we have a patient_name
+    // Update patient name if we have a patient_id linked
     const appt = await pool.query('SELECT patient_id FROM appointments WHERE id = $1', [req.params.id]);
     if (appt.rows.length > 0 && appt.rows[0].patient_id && patient_name) {
        await pool.query('UPDATE patients SET name = $1 WHERE id = $2', [patient_name, appt.rows[0].patient_id]);
