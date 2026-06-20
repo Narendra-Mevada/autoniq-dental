@@ -85,6 +85,38 @@ app.get('/api/db/payments/pending', async (req, res) => {
   }
 });
 
+// Update Appointment Status
+app.put('/api/db/appointments/:id', async (req, res) => {
+  try {
+    const { status } = req.body;
+    await pool.query('UPDATE appointments SET appointment_status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Lead Status
+app.put('/api/db/leads/:id', async (req, res) => {
+  try {
+    const { status } = req.body;
+    await pool.query('UPDATE leads SET lead_status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Mark Payment as Paid
+app.put('/api/db/payments/:id', async (req, res) => {
+  try {
+    await pool.query('UPDATE appointments SET payment_status = $1 WHERE id = $2', ['Paid', req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Proxy n8n API
 app.get('/api/n8n/executions', (req, res) => {
   const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=50';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
 import KPICard from '../components/KPICard';
-import { fetchLeads } from '../services/api';
+import { fetchLeads, updateLeadStatus } from '../services/api';
 import { UserPlus, Target, Users, XCircle } from 'lucide-react';
 
 const Leads = () => {
@@ -9,19 +9,33 @@ const Leads = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const loadLeads = async () => {
+    try {
+      const data = await fetchLeads();
+      setLeadsData(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadLeads = async () => {
-      try {
-        const data = await fetchLeads();
-        setLeadsData(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
     loadLeads();
   }, []);
+
+  const handleUpdateStatus = async (id, currentStatus) => {
+    let newStatus = 'Contacted';
+    if (currentStatus === 'Contacted') newStatus = 'Appointment Booked';
+    if (currentStatus === 'Appointment Booked') newStatus = 'Lost';
+
+    try {
+      await updateLeadStatus(id, newStatus);
+      loadLeads();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const columns = ['Name', 'Phone', 'Inquiry', 'Date', 'Status', 'Source'];
   
@@ -36,6 +50,8 @@ const Leads = () => {
   };
 
   const data = leadsData.map(l => ({
+    _id: l.id,
+    _status: l.lead_status, // hidden fields
     name: <span style={{ fontWeight: '600' }}>{l.patient_name}</span>,
     phone: l.phone,
     inquiry: l.inquiry,
@@ -45,8 +61,8 @@ const Leads = () => {
   }));
 
   const actions = [
-    { label: 'View', type: 'secondary' },
-    { label: 'Update Status', type: 'primary' }
+    { label: 'View', type: 'secondary', onClick: (row) => alert(`Viewing details for lead: ${row.name.props.children}`) },
+    { label: 'Update Status', type: 'primary', onClick: (row) => handleUpdateStatus(row._id, row._status) }
   ];
 
   return (

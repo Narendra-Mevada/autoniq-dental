@@ -15,7 +15,11 @@ const DataTable = ({ columns, data, actions }) => {
         <tbody>
           {data.map((row, rowIndex) => (
             <tr key={rowIndex}>
-              {Object.values(row).filter(val => typeof val !== 'object' || React.isValidElement(val)).map((cell, cellIndex) => (
+              {Object.entries(row)
+                .filter(([key]) => !key.startsWith('_'))
+                .map(([key, val]) => val)
+                .filter(val => typeof val !== 'object' || React.isValidElement(val))
+                .map((cell, cellIndex) => (
                 <td key={cellIndex}>{cell}</td>
               ))}
               {actions && (

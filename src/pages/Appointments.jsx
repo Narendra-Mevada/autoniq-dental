@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import { fetchAppointments } from '../services/api';
+import { fetchAppointments, updateAppointmentStatus } from '../services/api';
 
 const Appointments = () => {
   const [appointmentsData, setAppointmentsData] = useState([]);
@@ -8,19 +8,29 @@ const Appointments = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
 
+  const loadAppointments = async () => {
+    try {
+      const data = await fetchAppointments();
+      setAppointmentsData(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadAppointments = async () => {
-      try {
-        const data = await fetchAppointments();
-        setAppointmentsData(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
     loadAppointments();
   }, []);
+
+  const handleMarkArrived = async (id) => {
+    try {
+      await updateAppointmentStatus(id, 'Arrived');
+      loadAppointments(); // reload data to show updated status
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const columns = ['Name', 'Date', 'Time', 'Service', 'Status'];
   
@@ -43,17 +53,18 @@ const Appointments = () => {
   });
 
   const data = filteredData.map(app => ({
+    _id: app.id, // hidden field for actions
     name: app.patient_name || app.name || 'Walk-in',
     date: new Date(app.appointment_date).toLocaleDateString(),
     time: app.appointment_time,
     service: app.service || 'Consultation',
-    status: <span className={`badge ${app.appointment_status === 'Active' ? 'info' : 'success'}`}>{app.appointment_status}</span>,
+    status: <span className={`badge ${app.appointment_status === 'Active' ? 'info' : (app.appointment_status === 'Arrived' ? 'success' : 'warning')}`}>{app.appointment_status}</span>,
   }));
 
   const actions = [
-    { label: 'View', type: 'secondary', onClick: (row) => alert(`Viewing details for: ${row.name}`) },
-    { label: 'Edit', type: 'secondary', onClick: (row) => alert(`Edit appointment: ${row.name}`) },
-    { label: 'Mark Arrived', type: 'primary', onClick: (row) => alert(`Marked ${row.name} as arrived!`) }
+    { label: 'View', type: 'secondary', onClick: (row) => alert(`Opening View Modal for ${row.name}`) },
+    { label: 'Edit', type: 'secondary', onClick: (row) => alert(`Opening Edit Modal for ${row.name}`) },
+    { label: 'Mark Arrived', type: 'primary', onClick: (row) => handleMarkArrived(row._id) }
   ];
 
   return (

@@ -29,3 +29,33 @@ export const fetchN8nExecutions = async () => {
   if (!res.ok) throw new Error('Failed to fetch n8n executions');
   return res.json();
 };
+
+export const updateAppointmentStatus = async (id, status) => {
+  const res = await fetch(`${API_URL}/db/appointments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update appointment');
+  return res.json();
+};
+
+export const updateLeadStatus = async (id, status) => {
+  const res = await fetch(`${API_URL}/db/leads/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update lead');
+  return res.json();
+};
+
+export const updatePaymentStatus = async (id, status) => {
+  const res = await fetch(`${API_URL}/db/payments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update payment');
+  return res.json();
+};
