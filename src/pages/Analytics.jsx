@@ -1,119 +1,90 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Users, Calendar, Activity } from 'lucide-react';
+import KPICard from '../components/KPICard';
+import { fetchAppointments, fetchPendingPayments, fetchN8nExecutions } from '../services/api';
 
 const Analytics = () => {
-  const appointmentData = [
-    { name: 'Mon', appointments: 12 },
-    { name: 'Tue', appointments: 19 },
-    { name: 'Wed', appointments: 15 },
-    { name: 'Thu', appointments: 22 },
-    { name: 'Fri', appointments: 18 },
-    { name: 'Sat', appointments: 25 },
-    { name: 'Sun', appointments: 8 },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [n8nExecutions, setN8nExecutions] = useState([]);
 
-  const serviceData = [
-    { name: 'RCT', value: 35 },
-    { name: 'Cleaning', value: 45 },
-    { name: 'Implants', value: 15 },
-    { name: 'Braces', value: 20 },
-    { name: 'Whitening', value: 25 },
-  ];
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        const [appData, payData, n8nData] = await Promise.all([
+          fetchAppointments(),
+          fetchPendingPayments(),
+          fetchN8nExecutions()
+        ]);
+        setAppointments(appData);
+        setPayments(payData);
+        if (n8nData.data && n8nData.data.result) {
+          setN8nExecutions(n8nData.data.result);
+        }
+      } catch (err) {
+        console.error('Error fetching analytics data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAllData();
+  }, []);
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const totalAppts = appointments.length;
+  const arrivedAppts = appointments.filter(a => a.appointment_status === 'Arrived').length;
+  const pendingRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
-  const leadFunnel = [
-    { stage: 'Leads Received', count: 100 },
-    { stage: 'Appointments Booked', count: 65 },
-    { stage: 'Treatments Completed', count: 50 },
-    { stage: 'Payments Received', count: 45 },
+  // We keep the chart static for visual purposes but with a dynamic label since real history isn't stored by month yet
+  const chartHeight = 200;
+  const mockChartData = [
+    { label: 'Mon', value: 45 },
+    { label: 'Tue', value: 65 },
+    { label: 'Wed', value: 85 },
+    { label: 'Thu', value: 55 },
+    { label: 'Fri', value: 90 },
+    { label: 'Sat', value: totalAppts * 10 }, // Scale slightly for visual effect
+    { label: 'Sun', value: 30 },
   ];
+  const maxVal = Math.max(...mockChartData.map(d => d.value));
+
+  if (loading) return <div>Loading analytics...</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2rem' }}>
-      
-      {/* Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
-        
-        {/* Appointment Analytics */}
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1.5rem' }}>Weekly Appointments</h3>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={appointmentData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                <YAxis stroke="var(--text-secondary)" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', borderRadius: '8px' }}
-                  itemStyle={{ color: 'var(--text-primary)' }}
-                />
-                <Bar dataKey="appointments" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <h2>Clinic Analytics</h2>
 
-        {/* Service Analytics */}
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1.5rem' }}>Most Requested Services</h3>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={serviceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {serviceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', borderRadius: '8px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-            {serviceData.map((entry, index) => (
-              <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS[index % COLORS.length] }}></div>
-                {entry.name}
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+        <KPICard title="Total Appointments Logged" value={totalAppts} icon={<Calendar size={24} />} trend={0} />
+        <KPICard title="Patients Arrived" value={arrivedAppts} icon={<Users size={24} />} trend={0} />
+        <KPICard title="Pending Collection" value={`₹${pendingRevenue}`} icon={<TrendingUp size={24} />} trend={0} />
+        <KPICard title="Automations Fired" value={n8nExecutions.length} icon={<Activity size={24} />} trend={0} />
       </div>
 
-      {/* Funnel */}
       <div className="glass-panel" style={{ padding: '1.5rem' }}>
-        <h3 style={{ marginBottom: '1.5rem' }}>Lead Conversion Funnel</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-          {leadFunnel.map((step, index) => (
-            <div key={step.stage} style={{ 
-              width: `${100 - (index * 15)}%`, 
-              backgroundColor: `rgba(59, 130, 246, ${1 - (index * 0.15)})`,
-              padding: '1rem',
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              color: 'white',
-              fontWeight: '500'
-            }}>
-              <span>{step.stage}</span>
-              <span style={{ fontSize: '1.25rem', fontWeight: '700' }}>{step.count}</span>
+        <h3>Activity Trend (Mock Representation)</h3>
+        <div style={{ 
+          height: `${chartHeight}px`, 
+          marginTop: '2rem', 
+          display: 'flex', 
+          alignItems: 'flex-end',
+          gap: '1rem',
+          padding: '1rem 0'
+        }}>
+          {mockChartData.map((d, i) => (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ 
+                width: '100%', 
+                background: 'linear-gradient(180deg, var(--primary) 0%, rgba(56, 189, 248, 0.2) 100%)',
+                height: `${(d.value / maxVal) * chartHeight}px`,
+                borderRadius: '4px 4px 0 0',
+                transition: 'height 0.3s ease'
+              }}></div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{d.label}</span>
             </div>
           ))}
         </div>
       </div>
-
     </div>
   );
 };

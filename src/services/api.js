@@ -79,3 +79,19 @@ export const updateAppointmentDetails = async (id, data) => {
   if (!res.ok) throw new Error('Failed to update appointment details');
   return res.json();
 };
+
+export const fetchPatientsQueue = async () => {
+  const res = await fetch(`${API_URL}/db/patients/queue`);
+  if (!res.ok) throw new Error('Failed to fetch patients queue');
+  return res.json();
+};
+
+export const updateTreatmentStatus = async (id, status, amount) => {
+  const res = await fetch(`${API_URL}/db/treatments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, amount })
+  });
+  if (!res.ok) throw new Error('Failed to update treatment');
+  return res.json();
+};

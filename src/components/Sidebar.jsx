@@ -8,7 +8,7 @@ import {
   CreditCard, 
   BarChart3, 
   Activity, 
-  Settings 
+  HelpCircle 
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -21,7 +21,7 @@ const Sidebar = () => {
     { name: 'Payments', path: '/payments', icon: <CreditCard /> },
     { name: 'Analytics', path: '/analytics', icon: <BarChart3 /> },
     { name: 'Activity Logs', path: '/logs', icon: <Activity /> },
-    { name: 'Settings', path: '/settings', icon: <Settings /> },
+    { name: 'Help Support', path: '/help', icon: <HelpCircle /> },
   ];
 
   return (

@@ -1,134 +1,112 @@
-import React from 'react';
-import KPICard from '../components/KPICard';
-import { dashboardStats, todayAppointments, newLeads, pendingPayments } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
 import { Calendar, UserPlus, IndianRupee, Clock, MessageSquare, Activity } from 'lucide-react';
+import KPICard from '../components/KPICard';
+import DataTable from '../components/DataTable';
+import { fetchAppointments, fetchPendingPayments, fetchN8nExecutions } from '../services/api';
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [n8nExecutions, setN8nExecutions] = useState([]);
+
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        const [appData, payData, n8nData] = await Promise.all([
+          fetchAppointments(),
+          fetchPendingPayments(),
+          fetchN8nExecutions()
+        ]);
+        setAppointments(appData);
+        setPayments(payData);
+        if (n8nData.data && n8nData.data.result) {
+          setN8nExecutions(n8nData.data.result);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAllData();
+  }, []);
+
+  const today = new Date().toDateString();
+  const todaysAppointments = appointments.filter(a => new Date(a.appointment_date).toDateString() === today);
+  const pendingRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+  // Simplified recent lists
+  const recentAppointments = todaysAppointments.slice(0, 3).map(a => ({
+    name: a.patient_name || a.name || 'Walk-in',
+    time: a.appointment_time,
+    service: <span className="badge info">{a.service}</span>
+  }));
+
+  const recentPayments = payments.slice(0, 3).map(p => ({
+    name: p.patient_name,
+    amount: <span style={{ color: 'var(--danger)' }}>₹{p.amount}</span>
+  }));
+
+  const recentLeads = n8nExecutions.slice(0, 3).map(l => ({
+    name: l.workflowName || 'N8N Workflow',
+    status: <span className="badge warning">{l.status}</span>
+  }));
+
+  if (loading) {
+    return <div>Loading dashboard...</div>;
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2rem' }}>
-      
-      {/* KPI Grid */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
-        <KPICard 
-          title="Today's Appointments" 
-          value={dashboardStats.todayAppointments} 
-          icon={<Calendar size={24} />} 
-          trend={12} 
-        />
-        <KPICard 
-          title="Today's New Leads" 
-          value={dashboardStats.newLeads} 
-          icon={<UserPlus size={24} />} 
-          trend={25} 
-        />
-        <KPICard 
-          title="Revenue Collected" 
-          value={dashboardStats.revenueCollected.toLocaleString()} 
-          prefix="₹" 
-          icon={<IndianRupee size={24} />} 
-          trend={8} 
-        />
-        <KPICard 
-          title="Pending Payments" 
-          value={dashboardStats.pendingPayments.toLocaleString()} 
-          prefix="₹" 
-          icon={<Clock size={24} />} 
-          trend={-5} 
-          trendText="vs yesterday"
-        />
-        <KPICard 
-          title="AI Conversations" 
-          value={dashboardStats.aiConversations} 
-          icon={<MessageSquare size={24} />} 
-          trend={18} 
-        />
-        <KPICard 
-          title="Staff Hours Saved" 
-          value={dashboardStats.hoursSaved} 
-          suffix="h" 
-          icon={<Activity size={24} />} 
-          trend={10} 
-        />
+        <KPICard title="Today's Appointments" value={todaysAppointments.length} icon={<Calendar size={24} />} trend={0} />
+        <KPICard title="Pending Payments" value={`₹${pendingRevenue}`} icon={<Clock size={24} />} trend={0} />
+        <KPICard title="AI Automations Run" value={n8nExecutions.length} icon={<MessageSquare size={24} />} trend={0} />
+        <KPICard title="Total Appts Logged" value={appointments.length} icon={<Activity size={24} />} trend={0} />
       </div>
 
-      {/* Main Widgets Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
-        
-        {/* Today's Appointments Widget */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>Today's Appointments</h3>
-            <button className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>View All</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <h3>Today's Appointments</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {todayAppointments.map(app => (
-              <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)' }}>
-                <span style={{ fontWeight: '600', color: 'var(--accent-secondary)' }}>{app.time}</span>
-                <span style={{ flex: 1, fontWeight: '500' }}>{app.name}</span>
-                <span className="badge info">{app.service}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* New Leads Widget */}
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>New Leads</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {newLeads.map(lead => (
-              <div key={lead.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {recentAppointments.length === 0 ? <p>No appointments today.</p> : recentAppointments.map((apt, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
                 <div>
-                  <div style={{ fontWeight: '500' }}>{lead.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lead.inquiry}</div>
+                  <span style={{ color: 'var(--primary)', marginRight: '1rem', fontWeight: '500' }}>{apt.time}</span>
+                  <span>{apt.name}</span>
                 </div>
-                <span className="badge warning">New</span>
+                {apt.service}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Pending Payments Widget */}
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>Pending Payments</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {pendingPayments.map(payment => (
-              <div key={payment.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)' }}>
-                <span style={{ fontWeight: '500' }}>{payment.name}</span>
-                <span style={{ fontWeight: '600', color: 'var(--danger)' }}>₹{payment.amount}</span>
+          <h3>Recent AI Automations</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            {recentLeads.length === 0 ? <p>No executions.</p> : recentLeads.map((lead, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+                <span>{lead.name}</span>
+                {lead.status}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Automation Impact Widget */}
-        <div className="glass-panel" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1))', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--accent-primary)' }}>Automation Impact</h3>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Messages Handled</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '600' }}>{dashboardStats.messagesHandled}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Appointments Booked</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '600' }}>{dashboardStats.appointmentsBookedAI}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Reminders Sent</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '600' }}>{dashboardStats.remindersSent}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Payments Recovered</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--success)' }}>₹{dashboardStats.paymentsRecovered.toLocaleString()}</div>
-            </div>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <h3>Pending Payments</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+             {recentPayments.length === 0 ? <p>No pending payments.</p> : recentPayments.map((pay, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+                <span>{pay.name}</span>
+                {pay.amount}
+              </div>
+            ))}
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import KPICard from '../components/KPICard';
+import Modal from '../components/Modal';
 import { fetchPendingPayments, updatePaymentStatus } from '../services/api';
-import { IndianRupee, Clock, Activity, CheckCircle2 } from 'lucide-react';
 
 const Payments = () => {
   const [paymentsData, setPaymentsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   const loadPayments = async () => {
     try {
@@ -24,54 +26,77 @@ const Payments = () => {
     loadPayments();
   }, []);
 
-  const handleMarkPaid = async (id) => {
-    try {
-      await updatePaymentStatus(id, 'Paid');
-      loadPayments();
-    } catch (err) {
-      alert(err.message);
-    }
+  const openModal = (payment) => {
+    setSelectedPayment(payment);
+    setIsModalOpen(true);
   };
 
-  const columns = ['Appointment ID', 'Patient', 'Amount', 'Status'];
-  
-  const totalPending = paymentsData.reduce((acc, curr) => acc + Number(curr.amount), 0);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPayment(null);
+  };
+
+  const columns = ['Patient', 'Amount', 'Status'];
 
   const data = paymentsData.map(p => ({
-    _id: p.id, // hidden field
-    id: p.id,
-    patient: <span style={{ fontWeight: '600' }}>{p.patient_name}</span>,
+    _raw: p,
+    patient: p.patient_name,
     amount: `₹${p.amount}`,
-    status: <span className="badge warning">{p.payment_status}</span>
+    status: <span className="badge warning">Pending</span>
   }));
 
   const actions = [
-    { label: 'Mark Paid', type: 'primary', onClick: (row) => handleMarkPaid(row._id) },
-    { label: 'Mark Partial', type: 'secondary', onClick: (row) => alert(`Mark partial for Appt ID: ${row.id}`) },
-    { label: 'Send Reminder', type: 'secondary', onClick: (row) => alert(`Reminder sent to ${row.patient.props.children}!`) }
+    { label: 'Mark Paid', type: 'primary', onClick: (row) => openModal(row._raw) }
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-        <KPICard title="Total Collected" value={18500} prefix="₹" icon={<IndianRupee size={24} />} trend={12} />
-        <KPICard title="Pending Amount" value={totalPending.toLocaleString()} prefix="₹" icon={<Clock size={24} />} trend={-4} />
-        <KPICard title="Recovered By Automation" value={12500} prefix="₹" icon={<Activity size={24} />} trend={8} />
-        <KPICard title="Recovery Rate" value={68} suffix="%" icon={<CheckCircle2 size={24} />} trend={3} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Pending Billing</h2>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-        <h2>Pending Payments</h2>
-      </div>
-      
       {loading ? (
-        <div>Loading payments...</div>
+        <div>Loading pending payments...</div>
       ) : error ? (
         <div style={{ color: 'var(--danger)' }}>Error: {error}</div>
+      ) : paymentsData.length === 0 ? (
+        <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          No pending payments. When a treatment is marked "Done", it will appear here for billing.
+        </div>
       ) : (
         <DataTable columns={columns} data={data} actions={actions} />
       )}
+
+      {/* Payment Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        title="Collect Payment"
+      >
+        {selectedPayment && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+              <p style={{ margin: '0 0 0.5rem 0', color: 'var(--text-secondary)' }}>Patient: <strong style={{ color: 'var(--text-primary)' }}>{selectedPayment.patient_name}</strong></p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Total Due: <strong style={{ color: 'var(--success)' }}>₹{selectedPayment.amount}</strong></p>
+            </div>
+            
+            <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to mark this invoice as Paid?</p>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+              <button className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+              <button className="btn btn-primary" onClick={async () => {
+                try {
+                  await updatePaymentStatus(selectedPayment.id, 'Paid');
+                  loadPayments();
+                  closeModal();
+                } catch (err) {
+                  alert('Error updating payment: ' + err.message);
+                }
+              }}>Confirm Payment Received</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

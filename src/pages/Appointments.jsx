@@ -143,6 +143,7 @@ const Appointments = () => {
             const formData = new FormData(e.target);
             const appointmentData = {
               patient_name: formData.get('patient_name'),
+              phone: formData.get('phone'),
               appointment_date: formData.get('date'),
               appointment_time: formData.get('time'),
               service: formData.get('service')
@@ -164,6 +165,10 @@ const Appointments = () => {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Patient Name</label>
               <input name="patient_name" type="text" style={inputStyle} defaultValue={selectedAppointment?.patient_name || ''} required />
             </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Contact Number</label>
+              <input name="phone" type="tel" style={inputStyle} defaultValue={selectedAppointment?.phone || ''} required={modalType === 'new'} />
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Date</label>
@@ -178,10 +183,15 @@ const Appointments = () => {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Service</label>
               <select name="service" style={inputStyle} defaultValue={selectedAppointment?.service || 'Consultation'}>
                 <option value="Consultation">Consultation</option>
+                <option value="Teeth Cleaning & Scaling">Teeth Cleaning & Scaling</option>
                 <option value="Root Canal Treatment (RCT)">Root Canal Treatment (RCT)</option>
-                <option value="Teeth Whitening">Teeth Whitening</option>
-                <option value="Braces / Orthodontics">Braces / Orthodontics</option>
+                <option value="Tooth Extraction">Tooth Extraction</option>
                 <option value="Dental Implants">Dental Implants</option>
+                <option value="Braces / Orthodontics">Braces / Orthodontics</option>
+                <option value="Teeth Whitening">Teeth Whitening</option>
+                <option value="Dentures">Dentures</option>
+                <option value="Crowns & Bridges">Crowns & Bridges</option>
+                <option value="Pediatric Dentistry">Pediatric Dentistry</option>
               </select>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>

@@ -8,7 +8,7 @@ import Leads from './pages/Leads';
 import Payments from './pages/Payments';
 import Analytics from './pages/Analytics';
 import ActivityLogs from './pages/ActivityLogs';
-import Settings from './pages/Settings';
+import Help from './pages/Help';
 
 function App() {
   return (
@@ -22,7 +22,7 @@ function App() {
           <Route path="payments" element={<Payments />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="logs" element={<ActivityLogs />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="help" element={<Help />} />
         </Route>
       </Routes>
     </BrowserRouter>

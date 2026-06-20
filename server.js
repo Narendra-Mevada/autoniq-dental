@@ -74,10 +74,10 @@ app.get('/api/db/leads', async (req, res) => {
 app.get('/api/db/payments/pending', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT a.id, p.name as patient_name, a.amount, a.payment_status
+      SELECT a.id, COALESCE(p.name, a.patient_name) as patient_name, a.amount, a.payment_status
       FROM appointments a
-      JOIN patients p ON a.patient_id = p.id
-      WHERE a.payment_status = 'Pending' AND a.amount > 0
+      LEFT JOIN patients p ON a.patient_id = p.id
+      WHERE a.payment_status = 'Pending' AND a.treatment_status = 'Done'
     `);
     res.json(result.rows);
   } catch (err) {
@@ -120,26 +120,22 @@ app.put('/api/db/payments/:id', async (req, res) => {
 // Create New Appointment
 app.post('/api/db/appointments', async (req, res) => {
   try {
-    const { patient_name, appointment_date, appointment_time, service } = req.body;
+    const { patient_name, phone, appointment_date, appointment_time, service } = req.body;
     
-    // Check if patient exists by name, if not create a dummy patient or just rely on patient_name
-    // Since original schema allowed direct patient_name or patient_id, we'll try to find a patient first
     let patientRes = await pool.query('SELECT id FROM patients WHERE name = $1 LIMIT 1', [patient_name]);
     let patient_id = null;
     if (patientRes.rows.length > 0) {
       patient_id = patientRes.rows[0].id;
     }
 
-    // Insert into appointments (Handling both schemas by just inserting what we have)
-    // Note: If patient_id is required by FK, we must create a patient.
     if (!patient_id) {
-       const newPatient = await pool.query('INSERT INTO patients (name, phone) VALUES ($1, $2) RETURNING id', [patient_name, 'Unknown']);
+       const newPatient = await pool.query('INSERT INTO patients (name, phone) VALUES ($1, $2) RETURNING id', [patient_name, phone || 'Unknown']);
        patient_id = newPatient.rows[0].id;
     }
 
     await pool.query(
-      'INSERT INTO appointments (patient_id, appointment_date, appointment_time, service) VALUES ($1, $2, $3, $4)', 
-      [patient_id, appointment_date, appointment_time, service]
+      'INSERT INTO appointments (patient_id, patient_name, phone, appointment_date, appointment_time, service) VALUES ($1, $2, $3, $4, $5, $6)', 
+      [patient_id, patient_name, phone || 'Unknown', appointment_date, appointment_time, service]
     );
     res.json({ success: true });
   } catch (err) {
@@ -164,6 +160,36 @@ app.put('/api/db/appointments/details/:id', async (req, res) => {
     }
 
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Treatment Status & Amount
+app.put('/api/db/treatments/:id', async (req, res) => {
+  try {
+    const { status, amount } = req.body;
+    await pool.query(
+      'UPDATE appointments SET treatment_status = $1, amount = $2 WHERE id = $3',
+      [status, amount, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Arrived Patients Queue (For Patients tab)
+app.get('/api/db/patients/queue', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT a.*, COALESCE(p.name, a.patient_name) as patient_name, COALESCE(p.phone, a.phone) as phone
+      FROM appointments a
+      LEFT JOIN patients p ON a.patient_id = p.id
+      WHERE a.appointment_status = 'Arrived' AND a.treatment_status != 'Done'
+      ORDER BY a.appointment_date ASC, a.appointment_time ASC
+    `);
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
