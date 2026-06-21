@@ -35,7 +35,17 @@ const Dashboard = () => {
   }, []);
 
   const today = new Date().toDateString();
-  const todaysAppointments = appointments.filter(a => new Date(a.appointment_date).toDateString() === today);
+  const now = new Date();
+  const todaysAppointments = appointments
+    .filter(a => new Date(a.appointment_date).toDateString() === today)
+    .sort((a, b) => {
+      const dateA = new Date(`${a.appointment_date.split('T')[0]}T${a.appointment_time}`);
+      const dateB = new Date(`${b.appointment_date.split('T')[0]}T${b.appointment_time}`);
+      if (isNaN(dateA) || isNaN(dateB)) {
+        return new Date(a.appointment_date) - new Date(b.appointment_date);
+      }
+      return Math.abs(dateA - now) - Math.abs(dateB - now);
+    });
   const pendingRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Simplified recent lists

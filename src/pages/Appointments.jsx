@@ -68,7 +68,21 @@ const Appointments = () => {
     return true;
   });
 
-  const data = filteredData.map(app => ({
+  const now = new Date();
+  const sortedData = filteredData.sort((a, b) => {
+    // Attempt to combine date and time. If time is just "HH:MM:SS" or "HH:MM", it parses cleanly.
+    const dateA = new Date(`${a.appointment_date.split('T')[0]}T${a.appointment_time}`);
+    const dateB = new Date(`${b.appointment_date.split('T')[0]}T${b.appointment_time}`);
+    
+    // If invalid date fallback to just date comparison
+    if (isNaN(dateA) || isNaN(dateB)) {
+      return new Date(a.appointment_date) - new Date(b.appointment_date);
+    }
+    
+    return Math.abs(dateA - now) - Math.abs(dateB - now);
+  });
+
+  const data = sortedData.map(app => ({
     _raw: app, // Pass full object for editing
     _id: app.id,
     name: app.patient_name || app.name || 'Walk-in',
