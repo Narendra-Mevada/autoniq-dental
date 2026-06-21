@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { fetchAppointments, updateAppointmentStatus, createAppointment, updateAppointmentDetails } from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Appointments = () => {
   const [appointmentsData, setAppointmentsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
+  const { addNotification } = useNotification();
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -152,6 +154,12 @@ const Appointments = () => {
             try {
               if (modalType === 'new') {
                 await createAppointment(appointmentData);
+                addNotification({
+                  type: 'appointment',
+                  title: 'New Appointment',
+                  message: `Appointment created for ${appointmentData.patient_name || 'Walk-in'}`,
+                  data: appointmentData
+                });
               } else {
                 await updateAppointmentDetails(selectedAppointment.id, appointmentData);
               }
