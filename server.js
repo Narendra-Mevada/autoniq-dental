@@ -229,21 +229,50 @@ app.put('/api/db/settings', async (req, res) => {
   }
 });
 
-// 5. Proxy n8n API
-app.get('/api/n8n/executions', (req, res) => {
-  const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=100';
-  
-  https.get(targetUrl, {
-      headers: {
-          'accept': 'application/json',
-          'X-N8N-API-KEY': process.env.N8N_API_KEY || ''
+// 5. Proxy n8n API (Paginated to get exact count)
+app.get('/api/n8n/executions', async (req, res) => {
+  try {
+    const apiKey = process.env.N8N_API_KEY || '';
+    let allExecutions = [];
+    let lastId = null;
+    let keepFetching = true;
+    let pages = 0;
+    
+    while (keepFetching && pages < 10) { // Limit to 1000 executions to prevent timeout
+      let targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=100';
+      if (lastId) targetUrl += `&lastId=${lastId}`;
+
+      const data = await new Promise((resolve, reject) => {
+        https.get(targetUrl, {
+            headers: { 'accept': 'application/json', 'X-N8N-API-KEY': apiKey }
+        }, (proxyRes) => {
+            let body = '';
+            proxyRes.on('data', chunk => body += chunk);
+            proxyRes.on('end', () => resolve({ statusCode: proxyRes.statusCode, body }));
+        }).on('error', reject);
+      });
+
+      if (data.statusCode !== 200) {
+        if (pages === 0) return res.status(data.statusCode).send(data.body);
+        break; // If subsequent pages fail, just return what we have
       }
-  }, (proxyRes) => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers);
-      proxyRes.pipe(res);
-  }).on('error', (e) => {
-      res.status(500).json({ error: e.message });
-  });
+
+      const parsed = JSON.parse(data.body);
+      const execs = parsed.data || [];
+      allExecutions = allExecutions.concat(execs);
+
+      if (execs.length === 100) {
+        lastId = execs[execs.length - 1].id;
+        pages++;
+      } else {
+        keepFetching = false;
+      }
+    }
+
+    res.json({ data: allExecutions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Serve Vite build in production

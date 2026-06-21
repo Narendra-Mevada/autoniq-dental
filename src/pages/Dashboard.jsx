@@ -105,6 +105,7 @@ const Dashboard = () => {
           valueField="amount" 
           type="line" 
           color="#10b981" 
+          defaultTimeframe="monthly"
         />
         <div style={{ gridColumn: '1 / -1' }}>
           <MetricChart 

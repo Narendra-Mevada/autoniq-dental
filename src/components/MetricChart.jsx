@@ -9,8 +9,8 @@ const getStartOfWeek = (date) => {
   return new Date(d.setDate(diff));
 };
 
-const MetricChart = ({ title, data, dateField, valueField, type = 'bar', color = '#3b82f6' }) => {
-  const [timeframe, setTimeframe] = useState('weekly');
+const MetricChart = ({ title, data, dateField, valueField, type = 'bar', color = '#3b82f6', defaultTimeframe = 'weekly' }) => {
+  const [timeframe, setTimeframe] = useState(defaultTimeframe);
 
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
