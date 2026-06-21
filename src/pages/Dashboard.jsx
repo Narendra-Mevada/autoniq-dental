@@ -15,17 +15,24 @@ const Dashboard = () => {
   useEffect(() => {
     const loadAllData = async () => {
       try {
-        const [appData, payData, n8nData] = await Promise.all([
+        const [appRes, payRes, n8nRes] = await Promise.allSettled([
           fetchAppointments(),
           fetchPendingPayments(),
           fetchN8nExecutions()
         ]);
-        setAppointments(appData);
-        setPayments(payData);
-        if (n8nData.data && Array.isArray(n8nData.data)) {
-          setN8nExecutions(n8nData.data);
-        } else if (Array.isArray(n8nData)) {
-          setN8nExecutions(n8nData);
+        
+        if (appRes.status === 'fulfilled') setAppointments(appRes.value);
+        if (payRes.status === 'fulfilled') setPayments(payRes.value);
+        
+        if (n8nRes.status === 'fulfilled') {
+          const n8nData = n8nRes.value;
+          if (n8nData.data && Array.isArray(n8nData.data)) {
+            setN8nExecutions(n8nData.data);
+          } else if (Array.isArray(n8nData)) {
+            setN8nExecutions(n8nData);
+          }
+        } else {
+          console.error('Failed to fetch n8n data:', n8nRes.reason);
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);

@@ -10,7 +10,8 @@ import {
   CreditCard, 
   BarChart3, 
   Activity, 
-  HelpCircle 
+  HelpCircle,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -21,6 +22,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     { name: 'Patients', path: '/patients', icon: <Users /> },
     { name: 'Payments', path: '/payments', icon: <CreditCard /> },
     { name: 'Activity Logs', path: '/logs', icon: <Activity /> },
+    { name: 'Settings', path: '/settings', icon: <SettingsIcon /> },
     { name: 'Help Support', path: '/help', icon: <HelpCircle /> },
   ];
 
