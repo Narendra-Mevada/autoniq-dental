@@ -49,6 +49,8 @@ const Dashboard = () => {
       return Math.abs(dateA - now) - Math.abs(dateB - now);
     });
   const pendingRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const completedPayments = appointments.filter(a => a.payment_status === 'Paid');
+  const completedRevenue = completedPayments.reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
   // Simplified recent lists
   const recentAppointments = todaysAppointments.slice(0, 3).map(a => ({
@@ -75,6 +77,7 @@ const Dashboard = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
         <KPICard title="Today's Appointments" value={todaysAppointments.length} icon={<Calendar size={24} />} trend={0} />
+        <KPICard title="Revenue Generated" value={`₹${completedRevenue}`} icon={<IndianRupee size={24} />} trend={0} />
         <KPICard title="Pending Payments" value={`₹${pendingRevenue}`} icon={<Clock size={24} />} trend={0} />
         <KPICard title="AI Automations Run" value={n8nExecutions.length} icon={<MessageSquare size={24} />} trend={0} />
         <KPICard title="Total Appts Logged" value={appointments.length} icon={<Activity size={24} />} trend={0} />
@@ -90,7 +93,7 @@ const Dashboard = () => {
         />
         <MetricChart 
           title="Revenue Generated" 
-          data={payments} 
+          data={completedPayments} 
           dateField="appointment_date" 
           valueField="amount" 
           type="line" 
