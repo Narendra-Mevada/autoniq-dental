@@ -47,7 +47,7 @@ const Leads = () => {
         <div>Loading leads...</div>
       ) : leadsData.length === 0 ? (
         <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          No leads found. Please configure your n8n workflow to insert new leads into the database!
+          No leads found. Please configure your Autoniq workflow to insert new leads into the database!
         </div>
       ) : (
         <DataTable columns={columns} data={data} actions={[]} />

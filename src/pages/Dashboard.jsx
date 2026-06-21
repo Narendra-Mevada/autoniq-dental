@@ -51,7 +51,7 @@ const Dashboard = () => {
   }));
 
   const recentLeads = n8nExecutions.slice(0, 3).map(l => ({
-    name: l.workflowName || 'N8N Workflow',
+    name: l.workflowName || 'Autoniq Workflow',
     status: <span className="badge warning">{l.status}</span>
   }));
 
