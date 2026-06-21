@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, closeSidebar }) => {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard /> },
     { name: 'Appointments', path: '/appointments', icon: <CalendarDays /> },
@@ -24,7 +24,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <div className="brand">
           <img src={logo} alt="Autoniq Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
@@ -37,6 +37,7 @@ const Sidebar = () => {
             key={item.name}
             to={item.path}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            onClick={closeSidebar}
           >
             {item.icon}
             <span>{item.name}</span>

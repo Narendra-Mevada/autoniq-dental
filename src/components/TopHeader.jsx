@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Menu } from 'lucide-react';
 import './TopHeader.css';
 
-const TopHeader = () => {
+const TopHeader = ({ toggleSidebar }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const location = useLocation();
 
@@ -21,6 +21,9 @@ const TopHeader = () => {
   return (
     <header className="top-header">
       <div className="header-left">
+        <button className="mobile-menu-btn" aria-label="Menu" onClick={toggleSidebar}>
+          <Menu size={24} />
+        </button>
         <h1 className="page-title">{getPageTitle()}</h1>
         <div className="live-sync">
           <div className="live-indicator"></div>

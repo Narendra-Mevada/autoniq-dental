@@ -220,3 +220,39 @@ tr:hover {
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
+
+/* Mobile Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* Global Responsive Adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    padding-top: 0;
+  }
+  
+  .content-area {
+    margin-top: 1rem;
+  }
+  
+  /* Ensure grids become single column on mobile if they aren't already */
+  .grid, [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modals should take up more screen space on mobile */
+  .modal-container {
+    width: 95% !important;
+    padding: 1.5rem !important;
+  }
+}
