@@ -71,7 +71,6 @@ const Patients = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
         <KPICard title="Waiting Room" value={queueData.length} icon={<Clock size={24} />} trend={0} />
-        <KPICard title="Treatments Done Today" value={0} icon={<Activity size={24} />} trend={0} />
       </div>
 
       {loading ? (
