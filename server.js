@@ -231,7 +231,7 @@ app.put('/api/db/settings', async (req, res) => {
 
 // 5. Proxy n8n API
 app.get('/api/n8n/executions', (req, res) => {
-  const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=1000';
+  const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=100';
   
   https.get(targetUrl, {
       headers: {

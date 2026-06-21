@@ -8,6 +8,7 @@ import Leads from './pages/Leads';
 import Payments from './pages/Payments';
 import ActivityLogs from './pages/ActivityLogs';
 import Help from './pages/Help';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="patients" element={<Patients />} />
           <Route path="payments" element={<Payments />} />
           <Route path="logs" element={<ActivityLogs />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="help" element={<Help />} />
         </Route>
       </Routes>
