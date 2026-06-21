@@ -86,7 +86,6 @@ const Dashboard = () => {
         <KPICard title="Today's Appointments" value={todaysAppointments.length} icon={<Calendar size={24} />} trend={0} />
         <KPICard title="Revenue Generated" value={`₹${completedRevenue}`} icon={<IndianRupee size={24} />} trend={0} />
         <KPICard title="Pending Payments" value={`₹${pendingRevenue}`} icon={<Clock size={24} />} trend={0} />
-        <KPICard title="AI Automations Run" value={n8nExecutions.length} icon={<MessageSquare size={24} />} trend={0} />
         <KPICard title="Total Appts Logged" value={appointments.length} icon={<Activity size={24} />} trend={0} />
       </div>
 
@@ -107,18 +106,9 @@ const Dashboard = () => {
           color="#10b981" 
           defaultTimeframe="monthly"
         />
-        <div style={{ gridColumn: '1 / -1' }}>
-          <MetricChart 
-            title="Automations Fired" 
-            data={n8nExecutions} 
-            dateField="startedAt" 
-            type="bar" 
-            color="#8b5cf6" 
-          />
-        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <h3>Today's Appointments</h3>
@@ -136,17 +126,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <h3>Recent AI Automations</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-            {recentLeads.length === 0 ? <p>No executions.</p> : recentLeads.map((lead, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
-                <span>{lead.name}</span>
-                {lead.status}
-              </div>
-            ))}
-          </div>
-        </div>
+
 
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <h3>Pending Payments</h3>
