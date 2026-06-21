@@ -11,9 +11,9 @@ const Help = () => {
           If you need any assistance with the Autoniq Dental dashboard, or if you encounter any technical issues, our support team is available to help you immediately.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-            <div style={{ padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '50%', color: 'var(--primary)' }}>
+            <div style={{ padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '50%', color: 'var(--primary)', flexShrink: 0 }}>
               <Phone size={28} />
             </div>
             <div>
@@ -23,12 +23,12 @@ const Help = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-            <div style={{ padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '50%', color: 'var(--primary)' }}>
+            <div style={{ padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '50%', color: 'var(--primary)', flexShrink: 0 }}>
               <Mail size={28} />
             </div>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <p style={{ margin: '0 0 0.25rem 0', color: 'var(--text-secondary)' }}>Email Support</p>
-              <a href="mailto:narendramevada950@gmail.com" style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: 'var(--text-primary)', textDecoration: 'none' }}>narendramevada950@gmail.com</a>
+              <a href="mailto:narendramevada950@gmail.com" style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: 'var(--text-primary)', textDecoration: 'none', wordBreak: 'break-all' }}>narendramevada950@gmail.com</a>
             </div>
           </div>
 

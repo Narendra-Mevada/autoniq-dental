@@ -17,7 +17,6 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard /> },
     { name: 'Appointments', path: '/appointments', icon: <CalendarDays /> },
     { name: 'Patients', path: '/patients', icon: <Users /> },
-    { name: 'Leads', path: '/leads', icon: <UserPlus /> },
     { name: 'Payments', path: '/payments', icon: <CreditCard /> },
     { name: 'Analytics', path: '/analytics', icon: <BarChart3 /> },
     { name: 'Activity Logs', path: '/logs', icon: <Activity /> },
