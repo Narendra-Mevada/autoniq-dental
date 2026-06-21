@@ -19,7 +19,6 @@ const Sidebar = () => {
     { name: 'Appointments', path: '/appointments', icon: <CalendarDays /> },
     { name: 'Patients', path: '/patients', icon: <Users /> },
     { name: 'Payments', path: '/payments', icon: <CreditCard /> },
-    { name: 'Analytics', path: '/analytics', icon: <BarChart3 /> },
     { name: 'Activity Logs', path: '/logs', icon: <Activity /> },
     { name: 'Help Support', path: '/help', icon: <HelpCircle /> },
   ];

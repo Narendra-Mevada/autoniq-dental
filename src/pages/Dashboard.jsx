@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, UserPlus, IndianRupee, Clock, MessageSquare, Activity } from 'lucide-react';
 import KPICard from '../components/KPICard';
+import MetricChart from '../components/MetricChart';
 import DataTable from '../components/DataTable';
 import { fetchAppointments, fetchPendingPayments, fetchN8nExecutions } from '../services/api';
 
@@ -76,6 +77,33 @@ const Dashboard = () => {
         <KPICard title="Pending Payments" value={`₹${pendingRevenue}`} icon={<Clock size={24} />} trend={0} />
         <KPICard title="AI Automations Run" value={n8nExecutions.length} icon={<MessageSquare size={24} />} trend={0} />
         <KPICard title="Total Appts Logged" value={appointments.length} icon={<Activity size={24} />} trend={0} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <MetricChart 
+          title="Appointments Logged" 
+          data={appointments} 
+          dateField="appointment_date" 
+          type="bar" 
+          color="#3b82f6" 
+        />
+        <MetricChart 
+          title="Revenue Generated" 
+          data={payments} 
+          dateField="appointment_date" 
+          valueField="amount" 
+          type="line" 
+          color="#10b981" 
+        />
+        <div style={{ gridColumn: '1 / -1' }}>
+          <MetricChart 
+            title="Automations Fired" 
+            data={n8nExecutions} 
+            dateField="startedAt" 
+            type="bar" 
+            color="#8b5cf6" 
+          />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>

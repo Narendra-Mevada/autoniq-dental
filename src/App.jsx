@@ -6,7 +6,6 @@ import Appointments from './pages/Appointments';
 import Patients from './pages/Patients';
 import Leads from './pages/Leads';
 import Payments from './pages/Payments';
-import Analytics from './pages/Analytics';
 import ActivityLogs from './pages/ActivityLogs';
 import Help from './pages/Help';
 
@@ -19,7 +18,6 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="patients" element={<Patients />} />
           <Route path="payments" element={<Payments />} />
-          <Route path="analytics" element={<Analytics />} />
           <Route path="logs" element={<ActivityLogs />} />
           <Route path="help" element={<Help />} />
         </Route>
