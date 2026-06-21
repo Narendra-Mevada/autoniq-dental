@@ -28,7 +28,7 @@ const Sidebar = () => {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="brand">
-          <img src={logo} alt="Autoniq Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+          <img src={logo} alt="Autoniq Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
           Autoniq Dental
         </div>
       </div>
