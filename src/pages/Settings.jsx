@@ -62,7 +62,7 @@ const Settings = () => {
     return <div style={{ padding: '2rem', color: 'var(--text-secondary)' }}>Loading settings...</div>;
   }
 
-  const inputStyle = { padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)' };
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px' }}>
@@ -73,27 +73,27 @@ const Settings = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: '1 / -1' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Clinic Name</label>
-            <input type="text" name="clinic_name" value={formData.clinic_name} onChange={handleChange} style={inputStyle} />
+            <input type="text" name="clinic_name" value={formData.clinic_name} onChange={handleChange} className="input-field" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Phone</label>
-            <input type="text" name="phone" value={formData.phone} onChange={handleChange} style={inputStyle} />
+            <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="input-field" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Email</label>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} style={inputStyle} />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className="input-field" autoComplete="off" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', gridColumn: '1 / -1' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Address</label>
-            <input type="text" name="address" value={formData.address} onChange={handleChange} style={inputStyle} />
+            <input type="text" name="address" value={formData.address} onChange={handleChange} className="input-field" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Opening Time</label>
-            <input type="time" name="opening_time" value={formData.opening_time} onChange={handleChange} style={inputStyle} />
+            <input type="time" name="opening_time" value={formData.opening_time} onChange={handleChange} className="input-field" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Closing Time</label>
-            <input type="time" name="closing_time" value={formData.closing_time} onChange={handleChange} style={inputStyle} />
+            <input type="time" name="closing_time" value={formData.closing_time} onChange={handleChange} className="input-field" />
           </div>
         </div>
         
