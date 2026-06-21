@@ -52,7 +52,7 @@ const Dashboard = () => {
 
   const recentLeads = n8nExecutions.slice(0, 3).map(l => ({
     name: l.workflowName || 'Autoniq Workflow',
-    status: <span className="badge warning">{l.status}</span>
+    status: <span className={`badge ${l.status?.toLowerCase() === 'success' ? 'success' : 'warning'}`}>{l.status}</span>
   }));
 
   if (loading) {

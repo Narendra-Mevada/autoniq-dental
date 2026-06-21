@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import logo from '../assets/logo.png';
 import { 
   LayoutDashboard, 
   CalendarDays, 
@@ -27,7 +28,7 @@ const Sidebar = () => {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="brand">
-          <Activity color="var(--accent-primary)" />
+          <img src={logo} alt="Autoniq Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           Autoniq Dental
         </div>
       </div>
