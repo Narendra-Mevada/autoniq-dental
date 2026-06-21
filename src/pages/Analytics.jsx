@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Users, Calendar, Activity } from 'lucide-react';
 import KPICard from '../components/KPICard';
+import MetricChart from '../components/MetricChart';
 import { fetchAppointments, fetchPendingPayments, fetchN8nExecutions } from '../services/api';
 
 const Analytics = () => {
@@ -37,19 +38,6 @@ const Analytics = () => {
   const arrivedAppts = appointments.filter(a => a.appointment_status === 'Arrived').length;
   const pendingRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
-  // We keep the chart static for visual purposes but with a dynamic label since real history isn't stored by month yet
-  const chartHeight = 200;
-  const mockChartData = [
-    { label: 'Mon', value: 45 },
-    { label: 'Tue', value: 65 },
-    { label: 'Wed', value: 85 },
-    { label: 'Thu', value: 55 },
-    { label: 'Fri', value: 90 },
-    { label: 'Sat', value: totalAppts * 10 }, // Scale slightly for visual effect
-    { label: 'Sun', value: 30 },
-  ];
-  const maxVal = Math.max(...mockChartData.map(d => d.value));
-
   if (loading) return <div>Loading analytics...</div>;
 
   return (
@@ -63,28 +51,30 @@ const Analytics = () => {
         <KPICard title="Automations Fired" value={n8nExecutions.length} icon={<Activity size={24} />} trend={0} />
       </div>
 
-      <div className="glass-panel" style={{ padding: '1.5rem' }}>
-        <h3>Activity Trend (Mock Representation)</h3>
-        <div style={{ 
-          height: `${chartHeight}px`, 
-          marginTop: '2rem', 
-          display: 'flex', 
-          alignItems: 'flex-end',
-          gap: '1rem',
-          padding: '1rem 0'
-        }}>
-          {mockChartData.map((d, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ 
-                width: '100%', 
-                background: 'linear-gradient(180deg, var(--primary) 0%, rgba(56, 189, 248, 0.2) 100%)',
-                height: `${(d.value / maxVal) * chartHeight}px`,
-                borderRadius: '4px 4px 0 0',
-                transition: 'height 0.3s ease'
-              }}></div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{d.label}</span>
-            </div>
-          ))}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <MetricChart 
+          title="Appointments Logged" 
+          data={appointments} 
+          dateField="appointment_date" 
+          type="bar" 
+          color="#3b82f6" 
+        />
+        <MetricChart 
+          title="Revenue Generated" 
+          data={payments} 
+          dateField="appointment_date" 
+          valueField="amount" 
+          type="line" 
+          color="#10b981" 
+        />
+        <div style={{ gridColumn: '1 / -1' }}>
+          <MetricChart 
+            title="Automations Fired" 
+            data={n8nExecutions} 
+            dateField="startedAt" 
+            type="bar" 
+            color="#8b5cf6" 
+          />
         </div>
       </div>
     </div>

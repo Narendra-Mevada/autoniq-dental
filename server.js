@@ -74,7 +74,7 @@ app.get('/api/db/leads', async (req, res) => {
 app.get('/api/db/payments/pending', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT a.id, COALESCE(p.name, a.patient_name) as patient_name, a.amount, a.payment_status
+      SELECT a.id, COALESCE(p.name, a.patient_name) as patient_name, a.amount, a.payment_status, a.appointment_date
       FROM appointments a
       LEFT JOIN patients p ON a.patient_id = p.id
       WHERE a.payment_status = 'Pending' AND a.treatment_status = 'Done'
