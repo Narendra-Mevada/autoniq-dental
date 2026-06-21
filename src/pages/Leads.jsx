@@ -13,8 +13,10 @@ const Leads = () => {
       try {
         const data = await fetchN8nExecutions();
         // Extract real execution data
-        if (data.data && data.data.result) {
-           setLeadsData(data.data.result);
+        if (data.data && Array.isArray(data.data)) {
+           setLeadsData(data.data);
+        } else if (Array.isArray(data)) {
+           setLeadsData(data);
         }
       } catch (err) {
         console.error(err);

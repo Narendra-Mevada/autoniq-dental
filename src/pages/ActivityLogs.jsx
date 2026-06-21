@@ -10,8 +10,10 @@ const ActivityLogs = () => {
     const loadLogs = async () => {
       try {
         const data = await fetchN8nExecutions();
-        if (data.data && data.data.result) {
-           setLogs(data.data.result);
+        if (data.data && Array.isArray(data.data)) {
+           setLogs(data.data);
+        } else if (Array.isArray(data)) {
+           setLogs(data);
         }
       } catch (err) {
         console.error('Error fetching logs', err);

@@ -20,8 +20,10 @@ const Dashboard = () => {
         ]);
         setAppointments(appData);
         setPayments(payData);
-        if (n8nData.data && n8nData.data.result) {
-          setN8nExecutions(n8nData.data.result);
+        if (n8nData.data && Array.isArray(n8nData.data)) {
+          setN8nExecutions(n8nData.data);
+        } else if (Array.isArray(n8nData)) {
+          setN8nExecutions(n8nData);
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
