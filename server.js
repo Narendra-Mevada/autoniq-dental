@@ -195,6 +195,40 @@ app.get('/api/db/patients/queue', async (req, res) => {
   }
 });
 
+// Get Clinic Settings
+app.get('/api/db/settings', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM clinic_settings ORDER BY id ASC LIMIT 1');
+    res.json(result.rows[0] || {});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Clinic Settings
+app.put('/api/db/settings', async (req, res) => {
+  try {
+    const { clinic_name, phone, email, address, opening_time, closing_time } = req.body;
+    
+    // Always update the first row
+    const idRes = await pool.query('SELECT id FROM clinic_settings ORDER BY id ASC LIMIT 1');
+    if (idRes.rows.length > 0) {
+      await pool.query(
+        'UPDATE clinic_settings SET clinic_name = $1, phone = $2, email = $3, address = $4, opening_time = $5, closing_time = $6 WHERE id = $7',
+        [clinic_name, phone, email, address, opening_time, closing_time, idRes.rows[0].id]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO clinic_settings (clinic_name, phone, email, address, opening_time, closing_time) VALUES ($1, $2, $3, $4, $5, $6)',
+        [clinic_name, phone, email, address, opening_time, closing_time]
+      );
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Proxy n8n API
 app.get('/api/n8n/executions', (req, res) => {
   const targetUrl = 'https://n8n.bcap.tech/api/v1/executions?limit=50';
@@ -221,12 +255,35 @@ app.use((req, res) => {
 });
 
 // Test DB Connection before starting
-pool.query('SELECT NOW()', (err, res) => {
+pool.query('SELECT NOW()', async (err, res) => {
   if (err) {
     console.error('❌ Database connection failed:', err.message);
     console.log('⚠️ Server starting without database connection...');
   } else {
     console.log('✅ Connected to PostgreSQL database');
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS clinic_settings (
+            id SERIAL PRIMARY KEY,
+            clinic_name VARCHAR(200),
+            phone VARCHAR(20),
+            email VARCHAR(150),
+            address TEXT,
+            opening_time TIME,
+            closing_time TIME,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const countRes = await pool.query('SELECT COUNT(*) FROM clinic_settings');
+      if (parseInt(countRes.rows[0].count) === 0) {
+        await pool.query(`
+          INSERT INTO clinic_settings (clinic_name, phone, email, address, opening_time, closing_time)
+          VALUES ('Autoniq Dental Care', '+91 98765 43210', 'contact@autoniq.com', '123 Health Ave, Medical District', '09:00:00', '18:00:00')
+        `);
+      }
+    } catch (e) {
+      console.error('Migration failed:', e.message);
+    }
   }
   
   app.listen(PORT, () => {

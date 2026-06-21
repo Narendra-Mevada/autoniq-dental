@@ -3,6 +3,7 @@ import { Users, Target, UserCheck, UserMinus } from 'lucide-react';
 import KPICard from '../components/KPICard';
 import DataTable from '../components/DataTable';
 import { fetchLeads } from '../services/api';
+import clientConfig from '../config/clientConfig';
 
 const Leads = () => {
   const [leadsData, setLeadsData] = useState([]);
@@ -47,7 +48,7 @@ const Leads = () => {
         <div>Loading leads...</div>
       ) : leadsData.length === 0 ? (
         <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          No leads found. Please configure your Autoniq workflow to insert new leads into the database!
+          No leads found. Please configure your {clientConfig.clinicName} workflow to insert new leads into the database!
         </div>
       ) : (
         <DataTable columns={columns} data={data} actions={[]} />

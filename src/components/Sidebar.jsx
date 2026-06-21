@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import clientConfig from '../config/clientConfig';
 import { 
   LayoutDashboard, 
   CalendarDays, 
@@ -27,8 +28,8 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <div className="brand">
-          <img src={logo} alt="Autoniq Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
-          Autoniq Dental
+          <img src={logo} alt={`${clientConfig.clinicName} Logo`} style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+          {clientConfig.clinicName}
         </div>
       </div>
       <nav className="nav-links">

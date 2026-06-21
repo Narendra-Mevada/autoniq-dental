@@ -95,3 +95,19 @@ export const updateTreatmentStatus = async (id, status, amount) => {
   if (!res.ok) throw new Error('Failed to update treatment');
   return res.json();
 };
+
+export const fetchSettings = async () => {
+  const res = await fetch(`${API_URL}/db/settings`);
+  if (!res.ok) throw new Error('Failed to fetch settings');
+  return res.json();
+};
+
+export const updateSettings = async (data) => {
+  const res = await fetch(`${API_URL}/db/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update settings');
+  return res.json();
+};

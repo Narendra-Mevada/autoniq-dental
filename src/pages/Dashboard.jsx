@@ -3,6 +3,7 @@ import { Calendar, UserPlus, IndianRupee, Clock, MessageSquare, Activity } from 
 import KPICard from '../components/KPICard';
 import MetricChart from '../components/MetricChart';
 import DataTable from '../components/DataTable';
+import clientConfig from '../config/clientConfig';
 import { fetchAppointments, fetchPendingPayments, fetchN8nExecutions } from '../services/api';
 
 const Dashboard = () => {
@@ -62,7 +63,7 @@ const Dashboard = () => {
   }));
 
   const recentLeads = n8nExecutions.slice(0, 3).map(l => ({
-    name: l.workflowName || 'Autoniq Workflow',
+    name: l.workflowName || `${clientConfig.clinicName} Workflow`,
     status: <span className={`badge ${l.status?.toLowerCase() === 'success' ? 'success' : 'warning'}`}>{l.status}</span>
   }));
 
